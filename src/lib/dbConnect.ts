@@ -9,7 +9,7 @@ const connectDB = async () => {
   if (isConnected) return;
 
   try {
-    await mongoose.connect(process.env.MONGODB_URL as string, {
+    await mongoose.connect(process.env.MONGODB_URI as string, {
       dbName: 'financevisualizer',
     });
     isConnected = true;
