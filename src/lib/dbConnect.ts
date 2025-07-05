@@ -1,22 +1,36 @@
-
-
-
 import mongoose from 'mongoose';
 
-let isConnected = false;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-const connectDB = async () => {
-  if (isConnected) return;
+if (!MONGODB_URI) {
+  throw new Error('Please define MONGODB_URI in environment variables');
+}
+
+let cached = (global as any).mongoose || { conn: null, promise: null };
+
+export const connectDB = async () => {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      dbName: 'financevisualizer',
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 30000,
+    }).then(mongoose => {
+      console.log('MongoDB connected successfully');
+      return mongoose;
+    }).catch(err => {
+      console.error('MongoDB connection error:', err);
+      throw err;
+    });
+  }
 
   try {
-    await mongoose.connect(process.env.MONGODB_URI as string, {
-      dbName: 'financevisualizer',
-    });
-    isConnected = true;
-    console.log('MongoDB connected');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    throw e;
   }
-};
 
-export default connectDB;
+  return cached.conn;
+};

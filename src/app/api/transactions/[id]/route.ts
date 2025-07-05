@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/dbConnect";
-import Transaction from "@/models/Transaction";
+import { connectDB } from '@/lib/dbConnect';import Transaction from "@/models/Transaction";
 
 export async function PUT(req: NextRequest): Promise<NextResponse> {
   await connectDB();
